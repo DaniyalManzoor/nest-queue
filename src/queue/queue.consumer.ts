@@ -29,13 +29,6 @@ export class TestConsumer {
     console.log('END', {
       progress: job.progress(),
     });
-    //restart the queue
-    job.queue.add(
-      { status: QUEUE_STATUS.LOOP },
-      {
-        delay: 60000,
-      },
-    );
   }
 
   doSomething(data: unknown) {
@@ -43,19 +36,26 @@ export class TestConsumer {
   }
 
   //Events
-  @OnQueueCompleted()
-  async onQueueComleted(job: Job<unknown>) {
-    console.log('onQueueComleted', {
-      timestamp: job.finishedOn,
-      isCompleted: await job.isCompleted(),
-    });
-  }
-
   @OnQueueActive()
   async onQueueActive(job: Job<unknown>) {
     console.log('onQueueActive', {
       timestamp: job.processedOn,
       isCompleted: await job.isActive(),
     });
+  }
+
+  @OnQueueCompleted()
+  async onQueueComleted(job: Job<unknown>) {
+    console.log('onQueueComleted', {
+      timestamp: job.finishedOn,
+      isCompleted: await job.isCompleted(),
+    });
+    // add the job again for loo
+    job.queue.add(
+      { status: QUEUE_STATUS.LOOP },
+      {
+        delay: 60000,
+      },
+    );
   }
 }
