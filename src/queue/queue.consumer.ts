@@ -1,4 +1,9 @@
-import { Process, Processor } from '@nestjs/bull';
+import {
+  OnQueueActive,
+  OnQueueCompleted,
+  Process,
+  Processor,
+} from '@nestjs/bull';
 import { Job } from 'bull';
 import { QUEUE, QUEUE_STATUS } from 'src/constant/enum';
 
@@ -22,7 +27,6 @@ export class TestConsumer {
     }
 
     console.log('END', {
-      attemptsMade: job.timestamp,
       progress: job.progress(),
     });
     //restart the queue
@@ -36,5 +40,22 @@ export class TestConsumer {
 
   doSomething(data: unknown) {
     console.log('SomeThing', data);
+  }
+
+  //Events
+  @OnQueueCompleted()
+  async onQueueComleted(job: Job<unknown>) {
+    console.log('onQueueComleted', {
+      timestamp: job.finishedOn,
+      isCompleted: await job.isCompleted(),
+    });
+  }
+
+  @OnQueueActive()
+  async onQueueActive(job: Job<unknown>) {
+    console.log('onQueueActive', {
+      timestamp: job.processedOn,
+      isCompleted: await job.isActive(),
+    });
   }
 }
